@@ -82,12 +82,27 @@ def fit(data_pts: np.ndarray):
 
 
 def evaluate_fit(data_pts: np.ndarray, theta_deg: float, M: float, X: float):
-    """Report mean/max nearest-point distance as a fit-quality check."""
+    """Report mean/max/rms nearest-point distance and L1 residuals as a fit-quality check."""
     t_dense = np.linspace(T_MIN, T_MAX, N_DENSE)
     curve = curve_xy(theta_deg, M, X, t_dense)
     tree = cKDTree(curve)
-    dists, _ = tree.query(data_pts, k=1)
-    return dists.mean(), dists.max()
+    
+    # L2 distances (Euclidean)
+    dists_l2, indices = tree.query(data_pts, k=1)
+    
+    # L1 distances (Manhattan)
+    l1_dists = np.sum(np.abs(data_pts - curve[indices]), axis=1)
+    
+    # Calculate residual statistics
+    mean_l2 = dists_l2.mean()
+    max_l2 = dists_l2.max()
+    rms_l2 = np.sqrt(np.mean(dists_l2 ** 2))
+    
+    mean_l1 = l1_dists.mean()
+    max_l1 = l1_dists.max()
+    rms_l1 = np.sqrt(np.mean(l1_dists ** 2))
+    
+    return mean_l2, max_l2, rms_l2, mean_l1, max_l1, rms_l1
 
 
 def main():
@@ -95,13 +110,22 @@ def main():
     data_pts = df[["x", "y"]].to_numpy()
 
     (theta_deg, M, X), final_loss = fit(data_pts)
-    mean_d, max_d = evaluate_fit(data_pts, theta_deg, M, X)
+    mean_l2, max_l2, rms_l2, mean_l1, max_l1, rms_l1 = evaluate_fit(data_pts, theta_deg, M, X)
 
     print("Fitted parameters:")
     print(f"  theta = {theta_deg:.6f} deg ({np.deg2rad(theta_deg):.6f} rad)")
     print(f"  M     = {M:.6f}")
     print(f"  X     = {X:.6f}")
-    print(f"Fit quality: mean nearest-point dist = {mean_d:.6f}, max = {max_d:.6f}")
+    
+    print("\nFit quality (L2/Euclidean):")
+    print(f"  mean nearest-point dist = {mean_l2:.6f}")
+    print(f"  max nearest-point dist  = {max_l2:.6f}")
+    print(f"  rms nearest-point dist  = {rms_l2:.6f}")
+    
+    print("\nFit quality (L1/Manhattan):")
+    print(f"  mean nearest-point residual = {mean_l1:.6f}")
+    print(f"  max nearest-point residual  = {max_l1:.6f}")
+    print(f"  rms nearest-point residual  = {rms_l1:.6f}")
 
     theta_rad = np.deg2rad(theta_deg)
     equation = (

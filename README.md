@@ -26,6 +26,16 @@ Desmos-style expression (theta in radians):
 \left(t*\cos(0.523599)-e^{0.03\left|t\right|}\cdot\sin(0.3t)\sin(0.523599)+55,42+t*\sin(0.523599)+e^{0.03\left|t\right|}\cdot\sin(0.3t)\cos(0.523599)\right)
 ```
 
+
+Fit quality (L2/Euclidean):
+  mean nearest-point dist = 0.002576
+  max nearest-point dist  = 0.007826
+  rms nearest-point dist  = 0.003034
+
+Fit quality (L1/Manhattan):
+  mean nearest-point residual = 0.003253
+  max nearest-point residual  = 0.010425
+  rms nearest-point residual  = 0.003848
 ## Process
 
 **1. Inspect the data.** `xy_data.csv` has 1500 rows of `(x, y)` only —
@@ -66,6 +76,8 @@ We run:
 - The optimizer converges to clean values (30, 0.03, 55) rather than messy
   decimals, which is a strong indicator these are the true generating
   parameters rather than a noisy local fit.
+
+  
 
 ## Repo structure
 
